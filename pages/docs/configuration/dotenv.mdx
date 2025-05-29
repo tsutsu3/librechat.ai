@@ -43,8 +43,8 @@ For more info see:
 />
 
 ### Trust proxy
-Use the address that is at most n number of hops away from the Express application. 
-req.socket.remoteAddress is the first hop, and the rest are looked for in the X-Forwarded-For header from right to left. 
+Use the address that is at most n number of hops away from the Express application.
+req.socket.remoteAddress is the first hop, and the rest are looked for in the X-Forwarded-For header from right to left.
 A value of 0 means that the first untrusted address would be req.socket.remoteAddress, i.e. there is no reverse proxy.
 The `TRUST_PROXY` environment variable default is set to `1`.
 
@@ -52,7 +52,7 @@ Refer to [Express.js - trust proxy](https://expressjs.com/en/guide/behind-proxie
 
 <OptionTable
   options={[
-    ['TRUST_PROXY', 'number', 'Specifies the number of hops.', 'HOST=1'],
+    ['TRUST_PROXY', 'number', 'Specifies the number of hops.', 'TRUST_PROXY=1'],
   ]}
 />
 
@@ -248,6 +248,26 @@ Uncomment `ENDPOINTS` to customize the available endpoints in LibreChat.
     ['DEEPSEEK_API_KEY', 'string', 'API key for Deepseek API', '# DEEPSEEK_API_KEY='],
   ]}
 />
+
+### Web Search
+
+The web search feature enables internet search capabilities within LibreChat.
+
+**Important**: The exact environment variable names shown below are default references and can be customized through the `librechat.yaml` configuration file to use any variable names you prefer.
+
+For detailed configuration and customization options, see: [Web Search Configuration](/docs/configuration/librechat_yaml/object_structure/web_search)
+
+<OptionTable
+  options={[
+    ['SERPER_API_KEY', 'string', 'API key for Serper search provider. Get your key from https://serper.dev/api-key', '# SERPER_API_KEY='],
+    ['FIRECRAWL_API_KEY', 'string', 'API key for Firecrawl scraper service. Get your key from https://docs.firecrawl.dev/introduction#api-key', '# FIRECRAWL_API_KEY='],
+    ['FIRECRAWL_API_URL', 'string', 'Custom Firecrawl API URL (optional). Only needed for custom Firecrawl instances.', '# FIRECRAWL_API_URL='],
+    ['JINA_API_KEY', 'string', 'API key for Jina reranker service. Get your key from https://jina.ai/api-dashboard/', '# JINA_API_KEY='],
+    ['COHERE_API_KEY', 'string', 'API key for Cohere reranker service. Get your key from https://dashboard.cohere.com/welcome/login', '# COHERE_API_KEY='],
+  ]}
+/>
+
+**Note**: These variable names can be customized in your `librechat.yaml` configuration file. For example, you could use `CUSTOM_SERPER_KEY` instead of `SERPER_API_KEY` by configuring it in the web search settings. See the [Web Search Configuration](/docs/configuration/librechat_yaml/object_structure/web_search) documentation for details on customizing variable names.
 
 ### Anthropic
 see: [Anthropic Endpoint](./ai_setup.md#anthropic)
@@ -992,6 +1012,56 @@ For more information:
     ['OPENID_IMAGE_URL', 'string', 'The URL of the OpenID login button image.','OPENID_IMAGE_URL='],
     ['OPENID_USE_END_SESSION_ENDPOINT', 'string', 'Whether to use the Issuer End Session Endpoint as a Logout Redirect','OPENID_USE_END_SESSION_ENDPOINT=TRUE'],
     ['OPENID_AUTO_REDIRECT', 'boolean', 'Whether to automatically redirect to the OpenID provider.','OPENID_AUTO_REDIRECT=true'],
+  ]}
+/>
+                                                                                                                               
+##### OpenID Connect Token Reuse
+
+LibreChat supports reusing access and refresh tokens issued by your OpenID Connect provider (like Azure Entra ID) to manage user authentication state. When this feature is active, the refresh token passed to the user as a cookie is issued by your OpenID provider instead of LibreChat.
+
+<OptionTable
+  options={[
+    ['OPENID_REUSE_TOKENS', 'boolean', 'Enable reuse of OpenID provider tokens for session management.', 'OPENID_REUSE_TOKENS=false'],
+    ['OPENID_SCOPE', 'string', 'Space-separated list of OpenID scopes. Must include offline_access for token reuse.', 'OPENID_SCOPE=api://librechat/.default openid profile email offline_access'],
+    ['OPENID_JWKS_URL_CACHE_ENABLED', 'boolean', 'Enable caching of signing key verification results.', 'OPENID_JWKS_URL_CACHE_ENABLED=true'],
+    ['OPENID_JWKS_URL_CACHE_TIME', 'number', 'Cache duration in milliseconds (default: 600000 ms / 10 minutes).', 'OPENID_JWKS_URL_CACHE_TIME=600000'],
+    ['OPENID_ON_BEHALF_FLOW_FOR_USERINFRO_REQUIRED', 'boolean', 'Enable on-behalf-of flow for user info.', 'OPENID_ON_BEHALF_FLOW_FOR_USERINFRO_REQUIRED=true'],
+    ['OPENID_ON_BEHALF_FLOW_USERINFRO_SCOPE', 'string', 'Scope for user info in on-behalf-of flow.', 'OPENID_ON_BEHALF_FLOW_USERINFRO_SCOPE=user.read'],
+    ['OPENID_USE_END_SESSION_ENDPOINT', 'boolean', 'Enable use of the end session endpoint for logout.', 'OPENID_USE_END_SESSION_ENDPOINT=true'],
+  ]}
+/>
+
+<Callout type="note" title="Note">
+For detailed configuration steps and prerequisites, see [Re-use OpenID Tokens for Login Session](/docs/configuration/authentication/OAuth2-OIDC/token-reuse).
+</Callout>
+
+#### [SAML](/docs/configuration/authentication/SAML)
+
+For more information:
+  - [Auth0](/docs/configuration/authentication/SAML/auth0)
+
+<Callout type="warning" title="Mutual Exclusion of OpenID and SAML">
+If OpenID is enabled, SAML authentication will be automatically disabled.
+
+Only one authentication method can be active at a time.
+</Callout>
+
+<OptionTable
+  options={[
+    ['SAML_ENTRY_POINT', 'string', 'The SAML identity provider (IdP) entry point URL.', 'SAML_ENTRY_POINT='],
+    ['SAML_ISSUER', 'string', 'The SAML service provider (SP) entity ID.', 'SAML_ISSUER='],
+    ['SAML_CERT', 'string', 'The SAML signing certificate, provided as a file path or a one-line PEM string.', 'SAML_CERT='],
+    ['SAML_CALLBACK_URL', 'string', 'The callback URL for SAML authentication.','SAML_CALLBACK_URL=/oauth/saml/callback'],
+    ['SAML_SESSION_SECRET', 'string', 'The secret for SAML session storage.','SAML_SESSION_SECRET='],
+    ['SAML_EMAIL_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the user email. (default: email)','SAML_EMAIL_CLAIM='],
+    ['SAML_USERNAME_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the username. (default: username)','SAML_USERNAME_CLAIM='],
+    ['SAML_GIVEN_NAME_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the given name. (default: given_name)','SAML_GIVEN_NAME_CLAIM='],
+    ['SAML_FAMILY_NAME_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the family name. (default: family_name)','SAML_FAMILY_NAME_CLAIM='],
+    ['SAML_PICTURE_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the profile picture URL. (default: picture)','SAML_PICTURE_CLAIM='],
+    ['SAML_NAME_CLAIM', 'string', '<Optional>: The attribute in the SAML assertion containing the full name.','SAML_NAME_CLAIM='],
+    ['SAML_BUTTON_LABEL', 'string', '<Optional>: The label for the SAML login button.','SAML_BUTTON_LABEL='],
+    ['SAML_IMAGE_URL', 'string', '<Optional>: The URL of the SAML login button image.','SAML_IMAGE_URL='],
+    ['SAML_USE_AUTHN_RESPONSE_SIGNED', 'boolean', '<Optional>: If "true", signs the entire SAML Response. Otherwise, only the Assertion is signed (default).', 'SAML_USE_AUTHN_RESPONSE_SIGNED=']
   ]}
 />
 
